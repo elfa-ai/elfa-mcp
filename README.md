@@ -7,7 +7,6 @@ A multi-language project implementing MCP (More details needed about what MCP re
 This repository contains both Python and TypeScript implementations:
 
 - `/python` - Python implementation
-- `/typescript` - TypeScript implementation (coming soon)
 - `/docs` - Project documentation
 
 ## Getting Started
@@ -40,10 +39,6 @@ pip install -r requirements.txt
 ```sh
 pip install -r requirements-dev.txt
 ```
-
-### TypeScript Implementation
-
-The TypeScript implementation is located in the `/typescript` directory.
 
 ## Documentation
 
