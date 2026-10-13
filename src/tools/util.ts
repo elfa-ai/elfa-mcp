@@ -73,12 +73,14 @@ export const v3ToArg = z
 
 export const idsArg = z
   .array(z.string())
+  .min(1)
   .max(30)
   .optional()
   .describe("Fetch up to 30 you already hold, by id. No from needed.");
 
 export const entityIdsArg = z
   .array(z.string())
+  .min(1)
   .max(30)
   .optional()
   .describe("Up to 30 ids from the entities tool. Matches any of them.");

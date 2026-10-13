@@ -19,6 +19,7 @@ export function registerEntities(server: McpServer, deps: Deps): RegisteredTool 
           .describe('What you hold, for example "btc", "$SOL", "@VitalikButerin" or a contract address.'),
         entityType: z
           .array(z.enum(["token", "equity", "project", "person", "organisation"]))
+          .min(1)
           .optional()
           .describe("Narrow the match to these kinds. Omit to match every kind."),
         limit: limitArg(200),

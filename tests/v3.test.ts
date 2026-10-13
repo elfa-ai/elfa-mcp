@@ -241,8 +241,9 @@ describe("v3 tools", () => {
     expect(r.structuredContent?.notice).toMatch(/third-party/i);
 
     const emptyIds = vi.fn(list("calls"));
-    await call(emptyIds, "calls", { ids: [], from: 1 });
-    expect((emptyIds.mock.calls[0] as unknown as [string, V3Params])[1].limit).toBe(10);
+    expect((await call(emptyIds, "calls", { ids: [], from: 1 })).isError).toBe(true);
+    expect((await call(emptyIds, "events", { entityIds: [], from: 1 })).isError).toBe(true);
+    expect(emptyIds).not.toHaveBeenCalled();
 
     const byId = vi.fn(list("calls"));
     await call(byId, "calls", { ids: ["c1", "c2"] });

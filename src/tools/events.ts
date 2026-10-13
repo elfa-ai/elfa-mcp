@@ -80,6 +80,7 @@ export function registerEvents(server: McpServer, deps: Deps): RegisteredTool {
           .describe("level=events. update: a later reading of a story already served."),
         alertAction: z
           .array(z.enum(["alert", "monitor"]))
+          .min(1)
           .optional()
           .describe("level=events. alert: judged impactful. monitor: worth watching."),
         hasStoryline: z
@@ -107,6 +108,7 @@ export function registerEvents(server: McpServer, deps: Deps): RegisteredTool {
               "context",
             ]),
           )
+          .min(1)
           .optional()
           .describe("level=storylines. Storylines holding an event of this relation."),
         status: z
@@ -159,7 +161,7 @@ export function registerEvents(server: McpServer, deps: Deps): RegisteredTool {
           status: args.status,
           sort: args.sort,
           order: args.order,
-          limit: args.ids?.length ? undefined : args.limit,
+          limit: args.ids ? undefined : args.limit,
           cursor: args.cursor,
         });
         return {
