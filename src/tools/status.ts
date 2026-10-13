@@ -4,6 +4,21 @@ import type { Deps } from "../client.js";
 import { describeError } from "../errors.js";
 import { run } from "./util.js";
 
+const HISTORY_LOOKUP_TIMEOUT_MS = 3_000;
+
+function withinHistoryLookup<T>(promise: Promise<T>): Promise<T> {
+  let timer: NodeJS.Timeout | undefined;
+  return Promise.race([
+    promise,
+    new Promise<never>((_, reject) => {
+      timer = setTimeout(
+        () => reject(new Error("API v3 key status did not answer within 3 seconds.")),
+        HISTORY_LOOKUP_TIMEOUT_MS,
+      );
+    }),
+  ]).finally(() => clearTimeout(timer));
+}
+
 const REPORTED = [
   "tier",
   "status",
@@ -58,7 +73,7 @@ export function registerStatus(server: McpServer, deps: Deps): void {
         const [ping, status, v3Status] = await Promise.allSettled([
           deps.sdk.ping(),
           deps.sdk.getApiKeyStatus(),
-          deps.v3.get("/v3/key-status"),
+          withinHistoryLookup(deps.v3.get("/v3/key-status")),
         ]);
         const historyFrom =
           v3Status.status === "fulfilled" ? v3Status.value.historyFrom : undefined;
@@ -73,7 +88,9 @@ export function registerStatus(server: McpServer, deps: Deps): void {
           problem:
             status.status === "rejected"
               ? describeError(status.reason)
-              : null,
+              : v3Status.status === "rejected"
+                ? `historyFrom unavailable: ${describeError(v3Status.reason)}`
+                : null,
         };
       }),
   );

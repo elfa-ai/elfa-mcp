@@ -207,7 +207,7 @@ Notes:
 `api_status` is the fastest way to tell an auth problem from a credit problem.
 
 
-Mentions, news and narratives return third-party social text that anyone can write, events are written up from it, and calls and top accounts carry third-party account and channel names. The server marks it as untrusted in every response, and the server instructions tell the model to treat it as data. Keep that in mind before letting an agent chain from that content into `auto_query_write`.
+Mentions, news and narratives return third-party social text that anyone can write, events are written up from it, and the v3 tools carry third-party asset, account and channel names. The server marks it as untrusted in every response, and the server instructions tell the model to treat it as data. Keep that in mind before letting an agent chain from that content into `auto_query_write`.
 
 ## Development
 

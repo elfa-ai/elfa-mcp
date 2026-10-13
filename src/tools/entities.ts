@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { McpServer, RegisteredTool } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { Deps } from "../client.js";
+import { UNTRUSTED_NOTICE } from "../shape.js";
 import { cursorArg, limitArg, page, run } from "./util.js";
 
 export function registerEntities(server: McpServer, deps: Deps): RegisteredTool {
@@ -24,6 +25,7 @@ export function registerEntities(server: McpServer, deps: Deps): RegisteredTool 
         cursor: cursorArg,
       },
       outputSchema: {
+        notice: z.string(),
         items: z.array(z.record(z.unknown())),
         nextCursor: z.string().nullable(),
         hasMore: z.boolean(),
@@ -44,7 +46,7 @@ export function registerEntities(server: McpServer, deps: Deps): RegisteredTool 
           cursor: args.cursor,
         });
         const { items, nextCursor, hasMore } = page(response, "entities");
-        return { items, nextCursor, hasMore };
+        return { notice: UNTRUSTED_NOTICE, items, nextCursor, hasMore };
       }),
   );
 }

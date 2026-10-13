@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { McpServer, RegisteredTool } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { Deps } from "../client.js";
+import { UNTRUSTED_NOTICE } from "../shape.js";
 import {
   cursorArg,
   fail,
@@ -56,6 +57,7 @@ export function registerMarket(server: McpServer, deps: Deps): RegisteredTool {
       outputSchema: {
         view: z.string(),
         market: z.string(),
+        notice: z.string(),
         ...pageOutput,
       },
       annotations: {
@@ -89,6 +91,7 @@ export function registerMarket(server: McpServer, deps: Deps): RegisteredTool {
         return {
           view: args.view,
           market: args.market,
+          notice: UNTRUSTED_NOTICE,
           ...page(response, view.key),
         };
       });

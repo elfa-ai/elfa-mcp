@@ -4,6 +4,7 @@ import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { createServer } from "../src/server.js";
 import type { Deps } from "../src/client.js";
 import { describeError } from "../src/errors.js";
+import { toResult } from "../src/shape.js";
 import { createV3Client, queryString, V3ApiError, type V3Params } from "../src/v3.js";
 
 type Get = (path: string, params?: V3Params) => Promise<Record<string, unknown>>;
@@ -101,6 +102,19 @@ describe("v3 client", () => {
     );
     const slow = await client.get("/v3/events").catch((e: unknown) => e);
     expect(describeError(slow)).toContain("did not answer within 1000 ms");
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => {
+        const response = new Response("{}", { status: 200 });
+        vi.spyOn(response, "json").mockRejectedValue(
+          new DOMException("The operation was aborted due to timeout", "TimeoutError"),
+        );
+        return response;
+      }),
+    );
+    const stalled = await client.get("/v3/events").catch((e: unknown) => e);
+    expect(describeError(stalled)).toContain("did not answer within 1000 ms");
   });
 
   it("retries a 5xx but never a 4xx", async () => {
@@ -132,6 +146,7 @@ describe("v3 tools", () => {
     expect(r.isError, JSON.stringify(r.content)).toBeFalsy();
     expect(get).toHaveBeenCalledWith("/v3/entities", { q: "btc", entityType: ["token"], limit: 10, cursor: undefined });
     expect(r.structuredContent).toMatchObject({ items: [{ id: "a" }], nextCursor: "next", hasMore: true });
+    expect(r.structuredContent?.notice).toMatch(/third-party/i);
   });
 
   it("events maps each level to its path, list key and ids parameter", async () => {
@@ -266,5 +281,43 @@ describe("api_status historyFrom", () => {
     const result = await client.callTool({ name: "api_status", arguments: {} });
     await server.close();
     expect(result.structuredContent).toMatchObject({ historyFrom: null, key: { tier: "grow" } });
+    expect((result.structuredContent as { problem: string }).problem).toMatch(/^historyFrom unavailable/);
+  });
+
+  it("does not wait more than 3 seconds for /v3/key-status", async () => {
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+    const [ct, st] = InMemoryTransport.createLinkedPair();
+    const client = new Client({ name: "probe", version: "1.0.0" });
+    const server = createServer({
+      sdk: {
+        ping: async () => ({ success: true }),
+        getApiKeyStatus: async () => ({ success: true, data: { tier: "grow" } }),
+      } as unknown as Deps["sdk"],
+      v3: { get: () => new Promise(() => {}) },
+      maxResponseChars: 60000,
+    });
+    await Promise.all([client.connect(ct), server.connect(st)]);
+    const pending = client.callTool({ name: "api_status", arguments: {} });
+    await vi.advanceTimersByTimeAsync(3_000);
+    const result = await pending;
+    await server.close();
+    vi.useRealTimers();
+    expect(result.structuredContent).toMatchObject({ historyFrom: null, key: { tier: "grow" } });
+  });
+});
+
+describe("trimmed pages", () => {
+  const big = "x".repeat(400);
+
+  it("tells the agent to re-read the page only when page items were dropped", () => {
+    const page = { items: Array.from({ length: 30 }, () => ({ big })), nextCursor: "c" };
+    expect(JSON.stringify(toResult(page, 2_000).content)).toContain("nextCursor continues after the omitted items");
+  });
+
+  it("leaves the cursor advice out when only nested lists were trimmed", () => {
+    const page = { items: [{ sources: Array.from({ length: 30 }, () => big) }], nextCursor: "c" };
+    const text = JSON.stringify(toResult(page, 2_000).content);
+    expect(text).toContain("omitted");
+    expect(text).not.toContain("nextCursor continues");
   });
 });

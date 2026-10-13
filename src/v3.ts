@@ -60,7 +60,7 @@ function retryable(error: unknown): boolean {
 export function createV3Client(options: V3ClientOptions): V3Client {
   const base = (options.baseUrl ?? DEFAULT_BASE_URL).replace(/\/+$/, "");
 
-  async function once(url: string): Promise<Record<string, unknown>> {
+  async function request(url: string): Promise<Record<string, unknown>> {
     const response = await fetch(url, {
       headers: {
         ...options.headers,
@@ -69,14 +69,18 @@ export function createV3Client(options: V3ClientOptions): V3Client {
       },
       redirect: "error",
       signal: AbortSignal.timeout(options.timeout),
-    }).catch((error: unknown) => {
+    });
+    if (!response.ok) throw await errorFrom(response);
+    return (await response.json()) as Record<string, unknown>;
+  }
+
+  function once(url: string): Promise<Record<string, unknown>> {
+    return request(url).catch((error: unknown) => {
       if (error instanceof Error && error.name === "TimeoutError") {
         throw new Error(`The Elfa API did not answer within ${options.timeout} ms. Retry, or narrow the request.`);
       }
       throw error;
     });
-    if (!response.ok) throw await errorFrom(response);
-    return (await response.json()) as Record<string, unknown>;
   }
 
   return {
