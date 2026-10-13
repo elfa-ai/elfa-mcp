@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 interface Manifest {
-  server: { specScope: string; version: string };
+  server: { specScope: string[]; version: string };
   tools: Array<{ name: string; operations: string[] }>;
   unexposed: Array<{ operationId: string; reason: string }>;
 }
@@ -23,7 +23,7 @@ const pkg = load<{ version: string }>("package.json");
 const registry = load<{ version: string; packages: Array<{ version: string }> }>(
   "server.json",
 );
-const scope = manifest.server.specScope;
+const scopes = manifest.server.specScope;
 
 const versions = new Set([
   pkg.version,
@@ -34,7 +34,7 @@ const versions = new Set([
 
 const spec = new Set<string>();
 for (const [path, methods] of Object.entries(swagger.paths)) {
-  if (!path.startsWith(scope)) continue;
+  if (!scopes.some((scope) => path.startsWith(`${scope}/`))) continue;
   for (const operation of Object.values(methods)) {
     if (operation.operationId) spec.add(operation.operationId);
   }

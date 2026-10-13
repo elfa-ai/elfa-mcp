@@ -13,6 +13,7 @@ const manifest = JSON.parse(
 function deps(): Deps {
   return {
     sdk: {} as Deps["sdk"],
+    v3: { get: async () => ({}) },
     maxResponseChars: 60000,
   };
 }
@@ -133,6 +134,7 @@ describe("api_status", () => {
           },
         }),
       } as unknown as Deps["sdk"],
+      v3: { get: async () => ({ historyFrom: 1788307200 }) },
       maxResponseChars: 60000,
     });
 
@@ -144,6 +146,7 @@ describe("api_status", () => {
       expect(serialised.includes(secret), `leaked ${secret}`).toBe(false);
     }
     expect(serialised).toContain("payg");
+    expect(result.structuredContent).toMatchObject({ historyFrom: 1788307200 });
 
     await server.close();
   });

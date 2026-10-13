@@ -1,5 +1,27 @@
 # Changelog
 
+## 4.6.0
+
+### Added
+
+- **API v3 tools.** Five tools read API v3 across crypto and equities, free on Pay-as-you-go and Grow plans and open to Enterprise keys:
+  - `entities` resolves a ticker, $cashtag, name, @handle, contract address, CoinGecko id, FIGI or CIK to the entity id the other tools filter on (`/v3/entities`).
+  - `events` reads events, storylines and arcs, searchable by topic with `q` (`/v3/events`, `/v3/events/storylines`, `/v3/events/arcs`).
+  - `market` reads mindshare, call books and trending contracts (`/v3/market/{crypto,equity}/mindshare`, `/v3/market/{crypto,equity}/call-book`, `/v3/market/crypto/trending-contracts`).
+  - `calls` reads calls, call episodes and positioning (`/v3/calls`, `/v3/calls/episodes`, `/v3/calls/positioning`).
+  - `top_accounts` ranks X accounts by standing (`/v3/people/accounts`).
+- **`api_status` returns `historyFrom`** from `/v3/key-status`: the earliest time, in unix seconds, the events, market and calls tools read on the key's plan.
+- A key without v3 access sees the v3 tools listed with the upgrade path, the same way as `market_chat`, and calling one spends nothing. `events` replies carry the same untrusted-content notice as mentions and narratives.
+- The README and installation guide cover the hosted server at `https://mcp.elfa.ai/mcp`.
+
+### Changed
+
+- `swagger.json` is the published 2.10.0 spec. `check:drift` covers `/v2` and `/v3`.
+
+### Removed
+
+- **`gmx` is no longer an `auto_validate` exchange.** The published spec dropped it from `/v2/auto/validate-symbol/{exchange}/{symbol}`, so `method=symbol` takes `hyperliquid` or `binance`.
+
 ## 4.5.0
 
 ### Added

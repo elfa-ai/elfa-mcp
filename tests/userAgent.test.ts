@@ -92,6 +92,7 @@ describe("stdio client identity", () => {
     const config = loadConfig({ ELFA_API_KEY: "k" });
     const deps = buildDeps(config);
     const before = deps.sdk;
+    const beforeV3 = deps.v3;
     const server = createServer(deps);
     identifyClientOnInitialize(server, deps, config);
 
@@ -108,6 +109,7 @@ describe("stdio client identity", () => {
     await initialized;
 
     expect(deps.sdk).not.toBe(before);
+    expect(deps.v3).not.toBe(beforeV3);
     expect(agentOf(deps)).toBe(`elfa-mcp/${VERSION} (stdio; client=e2e-client/1.2.3)`);
     await client.close();
   });

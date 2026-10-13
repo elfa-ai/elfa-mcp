@@ -2,7 +2,7 @@ import { z } from "zod";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import type { Deps } from "../client.js";
 import { describeError } from "../errors.js";
-import { errorResult, toResult } from "../shape.js";
+import { asArray, errorResult, toResult } from "../shape.js";
 import type { Verbosity } from "../shape.js";
 
 export const verbosityArg = z
@@ -56,6 +56,73 @@ export const eqlQueryArg = z
   .describe(
     "EQL query object with conditions, actions and expiresIn. Build it with auto_build and check it with auto_validate first.",
   );
+
+export const v3FromArg = z
+  .number()
+  .int()
+  .optional()
+  .describe(
+    "Start of the range, unix seconds, not milliseconds. Required unless you fetch by ids or search with q. api_status returns historyFrom, the earliest time your plan reads.",
+  );
+
+export const v3ToArg = z
+  .number()
+  .int()
+  .optional()
+  .describe("End of the range, unix seconds. Defaults to now.");
+
+export const idsArg = z
+  .array(z.string())
+  .max(30)
+  .optional()
+  .describe("Fetch up to 30 you already hold, by id. No from needed.");
+
+export const entityIdsArg = z
+  .array(z.string())
+  .max(30)
+  .optional()
+  .describe("Up to 30 ids from the entities tool. Matches any of them.");
+
+export const orderArg = z
+  .enum(["desc", "asc"])
+  .optional()
+  .describe("desc (default) or asc.");
+
+export const cursorArg = z
+  .string()
+  .optional()
+  .describe("nextCursor from the previous reply. Keep every other argument the same.");
+
+export function limitArg(max: number) {
+  return z
+    .number()
+    .int()
+    .min(1)
+    .max(max)
+    .default(10)
+    .describe(
+      `Items per page, up to ${max}. Keep it small and page with cursor rather than asking for everything at once.`,
+    );
+}
+
+export const pageOutput = {
+  items: z.array(z.record(z.unknown())),
+  nextCursor: z.string().nullable(),
+  hasMore: z.boolean(),
+  servedFrom: z.number().nullable(),
+};
+
+export function page(
+  response: Record<string, unknown>,
+  key: string,
+): z.infer<z.ZodObject<typeof pageOutput>> {
+  return {
+    items: asArray<Record<string, unknown>>(response[key]),
+    nextCursor: typeof response.nextCursor === "string" ? response.nextCursor : null,
+    hasMore: response.hasMore === true,
+    servedFrom: typeof response.servedFrom === "number" ? response.servedFrom : null,
+  };
+}
 
 export function run(
   deps: Deps,

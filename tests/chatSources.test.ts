@@ -8,7 +8,7 @@ import { readSources } from "../src/tools/chat.js";
 async function callChat(chat: (params: unknown) => Promise<unknown>) {
   const [ct, st] = InMemoryTransport.createLinkedPair();
   const client = new Client({ name: "probe", version: "1.0.0" });
-  const server = createServer({ sdk: { chat } as unknown as Deps["sdk"], maxResponseChars: 60000 });
+  const server = createServer({ sdk: { chat } as unknown as Deps["sdk"], v3: { get: async () => ({}) }, maxResponseChars: 60000 });
   await Promise.all([client.connect(ct), server.connect(st)]);
   const result = await client.callTool({
     name: "market_chat",
