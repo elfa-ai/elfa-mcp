@@ -46,7 +46,7 @@ export interface Entitlements {
   scopes: string[];
 }
 
-/** Same matching as oracle's `hasScope`: exact, `*`, or a `prefix/*` family. */
+/** Same matching as the API's scope check: exact, `*`, or a `prefix/*` family. */
 export function hasScope(scopes: string[], required: string): boolean {
   return scopes.some((scope) => {
     if (scope === "*") return true;

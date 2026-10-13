@@ -23,7 +23,7 @@ async function connect(d: Deps, scopes?: string[]) {
 }
 
 describe("hasScope", () => {
-  it("matches like oracle: exact, star, and prefix families", () => {
+  it("matches like the API: exact, star, and prefix families", () => {
     expect(hasScope(["chat"], "chat")).toBe(true);
     expect(hasScope(["chat/stream"], "chat")).toBe(false);
     expect(hasScope(["*"], "chat")).toBe(true);

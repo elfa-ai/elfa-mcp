@@ -9,7 +9,7 @@ export function registerEntities(server: McpServer, deps: Deps): RegisteredTool 
     {
       title: "Entities",
       description:
-        "Turn a ticker, $cashtag, name, @handle, contract address, CoinGecko id, FIGI or CIK into the entity id that events and calls take. Free on Pay-as-you-go and Grow plans. It matches exactly, it is not a search: a prefix or a misspelling returns nothing. A ticker is not unique, so take the first row and check its name, or narrow with entityType. Every form of an asset resolves to one family id: WBTC and cbBTC are Bitcoin. Resolve once and reuse the id.",
+        "Turn a ticker, $cashtag, name, @handle, contract address, CoinGecko id, FIGI or CIK into the entity id that events and calls take. Free on Pay-as-you-go and Grow plans. It matches exactly, it is not a search: a prefix or a misspelling returns nothing. A ticker is not unique, so take the first row and check its name, or narrow with entityType. Forms of an asset share one family id where known: WBTC and cbBTC are Bitcoin. Resolve once and reuse the id.",
       inputSchema: {
         q: z
           .string()
