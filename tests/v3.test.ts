@@ -66,7 +66,12 @@ describe("v3 client", () => {
       "fetch",
       vi.fn(async () =>
         new Response(
-          JSON.stringify({ code: "ERR_BAD_REQUEST", message: "from is required", details: [{ field: "from" }] }),
+          JSON.stringify({
+            code: "ERR_BAD_REQUEST",
+            message: "from is required",
+            details: [{ field: "from" }],
+            requestId: "req-42",
+          }),
           { status: 400 },
         ),
       ),
@@ -78,6 +83,7 @@ describe("v3 client", () => {
     expect((error as V3ApiError).statusCode).toBe(400);
     expect(describeError(error)).toContain("from is required");
     expect(describeError(error)).toContain("Request rejected as invalid");
+    expect(describeError(error)).toContain("(requestId req-42)");
   });
 
   it("names the rate-limit reset on a 429 and explains a timeout", async () => {
@@ -123,7 +129,7 @@ describe("v3 client", () => {
       }),
     );
     const redirected = await client.get("/v3/events").catch((e: unknown) => e);
-    expect(describeError(redirected)).toContain("Check that ELFA_BASE_URL is the https API origin");
+    expect(describeError(redirected)).toContain("Check that ELFA_BASE_URL, if set, is the https API origin");
 
     vi.stubGlobal(
       "fetch",

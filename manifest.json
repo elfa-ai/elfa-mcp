@@ -13,7 +13,7 @@
     {
       "name": "api_status",
       "title": "API key status",
-      "summary": "Check API key tier, credit usage and remaining requests, and historyFrom, how far back the v3 tools read. Also confirms the API is reachable.",
+      "summary": "Check API key tier, credit usage and remaining requests, and historyFrom, how far back events, market and calls read. Also confirms the API is reachable.",
       "credits": "Free",
       "annotations": {
         "readOnlyHint": true,

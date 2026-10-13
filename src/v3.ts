@@ -45,6 +45,7 @@ async function errorFrom(response: Response): Promise<V3ApiError> {
   const body = (await response.json().catch(() => null)) as {
     message?: unknown;
     details?: unknown;
+    requestId?: unknown;
   } | null;
   if (typeof body?.message === "string" && body.message) message = body.message;
   if (body?.details !== undefined && body?.details !== null) {
@@ -52,6 +53,9 @@ async function errorFrom(response: Response): Promise<V3ApiError> {
   }
   const reset = response.headers.get("RateLimit-Reset");
   if (response.status === 429 && reset) message += `. Resets in ${reset} seconds`;
+  const requestId =
+    typeof body?.requestId === "string" ? body.requestId : response.headers.get("x-request-id");
+  if (requestId) message += ` (requestId ${requestId})`;
   return new V3ApiError(message, response.status);
 }
 
@@ -95,7 +99,7 @@ export function createV3Client(options: V3ClientOptions): V3Client {
         const cause = causeOf(error);
         if (cause === "unexpected redirect") {
           throw new V3RedirectError(
-            "The Elfa API answered with a redirect, which is refused so the API key is never forwarded. Check that ELFA_BASE_URL is the https API origin.",
+            "The Elfa API answered with a redirect, which is refused so the API key is never forwarded. Check that ELFA_BASE_URL, if set, is the https API origin (default https://api.elfa.ai).",
           );
         }
         throw new Error(`Could not reach the Elfa API: ${cause}.`);
