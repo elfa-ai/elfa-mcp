@@ -115,6 +115,15 @@ describe("v3 client", () => {
     );
     const stalled = await client.get("/v3/events").catch((e: unknown) => e);
     expect(describeError(stalled)).toContain("did not answer within 1000 ms");
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => {
+        throw new TypeError("fetch failed", { cause: new Error("unexpected redirect") });
+      }),
+    );
+    const redirected = await client.get("/v3/events").catch((e: unknown) => e);
+    expect(describeError(redirected)).toBe("Could not reach the Elfa API: unexpected redirect.");
   });
 
   it("retries a 5xx but never a 4xx", async () => {

@@ -5,7 +5,7 @@
 ### Added
 
 - **API v3 tools.** Five tools read API v3 across crypto and equities, free on Pay-as-you-go and Grow plans and open to Enterprise keys:
-  - `entities` resolves a ticker, $cashtag, name, @handle, contract address, CoinGecko id, FIGI or CIK to the entity id the other tools filter on (`/v3/entities`).
+  - `entities` resolves a ticker, $cashtag, name, @handle, contract address, CoinGecko id, FIGI or CIK to the entity id that `events` and `calls` filter on (`/v3/entities`).
   - `events` reads events, storylines and arcs, searchable by topic with `q` (`/v3/events`, `/v3/events/storylines`, `/v3/events/arcs`).
   - `market` reads mindshare, call books and trending contracts (`/v3/market/{crypto,equity}/mindshare`, `/v3/market/{crypto,equity}/call-book`, `/v3/market/crypto/trending-contracts`).
   - `calls` reads calls, call episodes and positioning (`/v3/calls`, `/v3/calls/episodes`, `/v3/calls/positioning`).

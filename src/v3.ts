@@ -79,6 +79,9 @@ export function createV3Client(options: V3ClientOptions): V3Client {
       if (error instanceof Error && error.name === "TimeoutError") {
         throw new Error(`The Elfa API did not answer within ${options.timeout} ms. Retry, or narrow the request.`);
       }
+      if (error instanceof TypeError && error.cause instanceof Error) {
+        throw new Error(`Could not reach the Elfa API: ${error.cause.message}.`);
+      }
       throw error;
     });
   }
