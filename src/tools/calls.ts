@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { McpServer, RegisteredTool } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { Deps } from "../client.js";
+import { UNTRUSTED_NOTICE } from "../shape.js";
 import {
   cursorArg,
   entityIdsArg,
@@ -60,6 +61,7 @@ export function registerCalls(server: McpServer, deps: Deps): RegisteredTool {
       },
       outputSchema: {
         level: z.string(),
+        notice: z.string(),
         ...pageOutput,
       },
       annotations: {
@@ -82,6 +84,7 @@ export function registerCalls(server: McpServer, deps: Deps): RegisteredTool {
           const response = await deps.v3.get("/v3/calls/positioning", { entityId });
           return {
             level: args.level,
+            notice: UNTRUSTED_NOTICE,
             items: [response],
             nextCursor: null,
             hasMore: false,
@@ -103,11 +106,12 @@ export function registerCalls(server: McpServer, deps: Deps): RegisteredTool {
           direction: args.direction,
           assetClass: args.assetClass,
           order: args.order,
-          limit: args.limit,
+          limit: args.ids ? undefined : args.limit,
           cursor: args.cursor,
         });
         return {
           level: args.level,
+          notice: UNTRUSTED_NOTICE,
           ...page(response, episodes ? "episodes" : "calls"),
         };
       });

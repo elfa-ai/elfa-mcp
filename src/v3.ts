@@ -67,6 +67,7 @@ export function createV3Client(options: V3ClientOptions): V3Client {
         Accept: "application/json",
         "x-elfa-api-key": options.apiKey,
       },
+      redirect: "error",
       signal: AbortSignal.timeout(options.timeout),
     }).catch((error: unknown) => {
       if (error instanceof Error && error.name === "TimeoutError") {

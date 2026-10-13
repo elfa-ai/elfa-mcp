@@ -57,6 +57,7 @@ describe("v3 client", () => {
     const [url, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
     expect(url).toBe("https://api.example/v3/entities?q=btc");
     expect(init.headers).toMatchObject({ "x-elfa-api-key": "k", "User-Agent": "elfa-mcp/test" });
+    expect(init.redirect).toBe("error");
   });
 
   it("raises the API message and details with the status", async () => {
@@ -190,6 +191,14 @@ describe("v3 tools", () => {
     expect(path).toBe("/v3/calls/episodes");
     expect(params.handle).toBe("3PeaksTrading");
 
+    expect(r.structuredContent?.notice).toMatch(/third-party/i);
+
+    const byId = vi.fn(list("calls"));
+    await call(byId, "calls", { ids: ["c1", "c2"] });
+    const [, byIdParams] = byId.mock.calls[0] as unknown as [string, V3Params];
+    expect(byIdParams.callIds).toEqual(["c1", "c2"]);
+    expect(byIdParams.limit).toBeUndefined();
+
     const missing = vi.fn();
     expect((await call(missing, "calls", { level: "positioning" })).isError).toBe(true);
     expect(missing).not.toHaveBeenCalled();
@@ -205,6 +214,7 @@ describe("v3 tools", () => {
     const r = await call(get, "top_accounts", { limit: 3 });
     expect(r.isError, JSON.stringify(r.content)).toBeFalsy();
     expect(get).toHaveBeenCalledWith("/v3/people/accounts", { order: undefined, limit: 3, cursor: undefined });
+    expect(r.structuredContent?.notice).toMatch(/third-party/i);
   });
 
   it("locks every v3 tool for a key without v3 scopes, and never calls the API", async () => {
