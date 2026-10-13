@@ -17,6 +17,8 @@
 ### Changed
 
 - `swagger.json` is the published 2.10.0 spec. `check:drift` covers `/v2` and `/v3`.
+- `api_status` reports a failed `/v3/key-status` lookup in `problem` as `historyFrom unavailable: …`, and waits for it at most 3 seconds.
+- When a reply is trimmed to fit and page items were dropped, the note says `nextCursor` continues after them, so re-read the page with a lower `limit` before paging on.
 
 ### Removed
 

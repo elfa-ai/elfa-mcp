@@ -106,7 +106,7 @@ export function registerCalls(server: McpServer, deps: Deps): RegisteredTool {
           direction: args.direction,
           assetClass: args.assetClass,
           order: args.order,
-          limit: args.ids ? undefined : args.limit,
+          limit: args.ids?.length ? undefined : args.limit,
           cursor: args.cursor,
         });
         return {

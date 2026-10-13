@@ -15,6 +15,8 @@ export interface V3Client {
   get(path: string, params?: V3Params): Promise<Record<string, unknown>>;
 }
 
+export class V3RedirectError extends Error {}
+
 export class V3ApiError extends Error {
   constructor(
     message: string,
@@ -54,7 +56,17 @@ async function errorFrom(response: Response): Promise<V3ApiError> {
 }
 
 function retryable(error: unknown): boolean {
+  if (error instanceof V3RedirectError) return false;
   return !(error instanceof V3ApiError) || error.statusCode >= 500;
+}
+
+function causeOf(error: TypeError): string {
+  const cause = error.cause as
+    | { message?: unknown; code?: unknown; errors?: Array<{ message?: unknown }> }
+    | undefined;
+  const candidates = [cause?.message, cause?.code, cause?.errors?.[0]?.message];
+  const found = candidates.find((value) => typeof value === "string" && value.length > 0);
+  return typeof found === "string" ? found : "network error";
 }
 
 export function createV3Client(options: V3ClientOptions): V3Client {
@@ -79,8 +91,14 @@ export function createV3Client(options: V3ClientOptions): V3Client {
       if (error instanceof Error && error.name === "TimeoutError") {
         throw new Error(`The Elfa API did not answer within ${options.timeout} ms. Retry, or narrow the request.`);
       }
-      if (error instanceof TypeError && error.cause instanceof Error) {
-        throw new Error(`Could not reach the Elfa API: ${error.cause.message}.`);
+      if (error instanceof TypeError && error.cause !== undefined) {
+        const cause = causeOf(error);
+        if (cause === "unexpected redirect") {
+          throw new V3RedirectError(
+            "The Elfa API answered with a redirect, which is refused so the API key is never forwarded. Check that ELFA_BASE_URL is the https API origin.",
+          );
+        }
+        throw new Error(`Could not reach the Elfa API: ${cause}.`);
       }
       throw error;
     });

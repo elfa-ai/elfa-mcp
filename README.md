@@ -73,7 +73,7 @@ Some MCP clients apply their own timeout, often around 60 seconds. `narratives` 
 
 | Tool | Mode | Cost | What it does |
 | --- | --- | --- | --- |
-| `api_status` | read | Free | Check API key tier, credit usage and remaining requests. Also confirms the API is reachable. |
+| `api_status` | read | Free | Check API key tier, credit usage and remaining requests, and historyFrom, how far back the v3 tools read. Also confirms the API is reachable. |
 | `mentions` | read | 1 per call | Social mentions from X and Telegram. mode=top ranks a ticker's mentions by engagement, mode=search filters by keyword or account, mode=news returns the token news feed, which is X posts from accounts tagged as news sources rather than articles from news outlets. |
 | `trending` | read | 1 per call | What is gaining social attention. scope=tokens for tickers, scope=contracts_twitter or scope=contracts_telegram for contract addresses. |
 | `narratives` | read | 5 per call | Written narrative analysis with source links. scope=market extracts market-wide narratives, scope=keywords summarises events for specific keywords. |

@@ -12,7 +12,7 @@ Client config files that hold this value are plain text. Keep them out of versio
 
 ## Untrusted content
 
-Mentions, news and narratives are third-party social posts. Anyone can write them, including text designed to steer a model.
+Mentions, news and narratives are third-party social posts, events are written up from them, and the API v3 tools carry third-party asset, account and channel names. Anyone can write them, including text designed to steer a model.
 
 The server marks that content as untrusted in every response and instructs the model to treat it as data. That is a mitigation, not a guarantee. When an agent can reach both this content and a tool that spends money, review the chain.
 

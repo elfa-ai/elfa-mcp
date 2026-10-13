@@ -5,7 +5,7 @@ import { createServer } from "../src/server.js";
 import type { Deps } from "../src/client.js";
 import { describeError } from "../src/errors.js";
 import { toResult } from "../src/shape.js";
-import { createV3Client, queryString, V3ApiError, type V3Params } from "../src/v3.js";
+import { createV3Client, queryString, V3ApiError, V3RedirectError, type V3Params } from "../src/v3.js";
 
 type Get = (path: string, params?: V3Params) => Promise<Record<string, unknown>>;
 
@@ -123,7 +123,30 @@ describe("v3 client", () => {
       }),
     );
     const redirected = await client.get("/v3/events").catch((e: unknown) => e);
-    expect(describeError(redirected)).toBe("Could not reach the Elfa API: unexpected redirect.");
+    expect(describeError(redirected)).toContain("Check that ELFA_BASE_URL is the https API origin");
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => {
+        throw new TypeError("fetch failed", {
+          cause: Object.assign(new AggregateError([new Error("connect ECONNREFUSED ::1:443")], ""), {
+            code: "ECONNREFUSED",
+          }),
+        });
+      }),
+    );
+    const refused = await client.get("/v3/events").catch((e: unknown) => e);
+    expect(describeError(refused)).toBe("Could not reach the Elfa API: ECONNREFUSED.");
+  });
+
+  it("never retries a refused redirect", async () => {
+    const redirect = vi.fn(async () => {
+      throw new TypeError("fetch failed", { cause: new Error("unexpected redirect") });
+    });
+    vi.stubGlobal("fetch", redirect);
+    const client = createV3Client({ apiKey: "k", timeout: 1000, retries: 2 });
+    await expect(client.get("/v3/events")).rejects.toBeInstanceOf(V3RedirectError);
+    expect(redirect).toHaveBeenCalledTimes(1);
   });
 
   it("retries a 5xx but never a 4xx", async () => {
@@ -216,6 +239,10 @@ describe("v3 tools", () => {
     expect(params.handle).toBe("3PeaksTrading");
 
     expect(r.structuredContent?.notice).toMatch(/third-party/i);
+
+    const emptyIds = vi.fn(list("calls"));
+    await call(emptyIds, "calls", { ids: [], from: 1 });
+    expect((emptyIds.mock.calls[0] as unknown as [string, V3Params])[1].limit).toBe(10);
 
     const byId = vi.fn(list("calls"));
     await call(byId, "calls", { ids: ["c1", "c2"] });
