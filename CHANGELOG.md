@@ -1,5 +1,22 @@
 # Changelog
 
+## 4.7.0
+
+### Added
+
+- **`top_accounts` ranks by track record.** A new `metric` argument (API 2.11.0) takes `standing` (the default), `alphaScore`, `hitRate` or `avgReturn`. The track metrics rank only accounts with at least 20 scored positions, over every position since late June 2026. The description steers agents to `alphaScore` for "best callers", because `avgReturn` is not adjusted for the market.
+
+### Changed
+
+- `events`: the `assetClass` description now says it keeps events tied to that market by what they name, plus events tied to neither, and that a repeated query can return fewer as names get linked to assets (API 2.10.1). For `level=arcs` it keeps arcs where at least 15% of events name an asset in that market, then macro arcs.
+- `cursor` descriptions state the published paging rule: change any argument but `limit` and the cursor fails.
+- Server instructions drop the unix-seconds line, which every `from` argument already carries.
+- `swagger.json` is the published 2.11.0 spec.
+
+### Fixed
+
+- `api_status` aborts its API v3 key-status lookup after 3 seconds, without retrying, instead of leaving the request open in the background.
+
 ## 4.6.0
 
 ### Added

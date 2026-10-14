@@ -88,7 +88,7 @@ Some MCP clients apply their own timeout, often around 60 seconds. `narratives` 
 | `events` | read | Free on PAYG and Grow | What is happening in crypto and equity markets. level=events for what happened and how prices reacted, level=storylines for one development threaded over days, level=arcs for storylines grouped into a larger movement. Searchable by topic. |
 | `market` | read | Free on PAYG and Grow | Whole-market views for crypto or equities. view=mindshare ranks assets by share of attention, view=call_book is the crowd's long/short lean hour by hour, view=trending_contracts ranks contract addresses by how many posts pasted them. |
 | `calls` | read | Free on PAYG and Grow | Positions accounts take in posts. level=calls for each post that takes or changes a position, level=episodes for each position from open to close with the author's track record, level=positioning for open longs and shorts on one asset now. |
-| `top_accounts` | read | Free on PAYG and Grow | X accounts ranked by standing, how much other accounts engage with them, with each account's track record as a caller. |
+| `top_accounts` | read | Free on PAYG and Grow | X accounts ranked by standing (how much other accounts engage with them) or, with metric, by their track record as callers (alphaScore, hitRate, avgReturn). |
 
 Not exposed as tools:
 

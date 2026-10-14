@@ -1,7 +1,7 @@
 {
   "server": {
     "name": "elfa",
-    "version": "4.6.0",
+    "version": "4.7.0",
     "docs": "https://docs.elfa.ai",
     "spec": "https://docs.elfa.ai/swagger/swagger.json",
     "specScope": [
@@ -266,7 +266,7 @@
     {
       "name": "top_accounts",
       "title": "Top accounts",
-      "summary": "X accounts ranked by standing, how much other accounts engage with them, with each account's track record as a caller.",
+      "summary": "X accounts ranked by standing (how much other accounts engage with them) or, with metric, by their track record as callers (alphaScore, hitRate, avgReturn).",
       "credits": "Free on PAYG and Grow",
       "annotations": {
         "readOnlyHint": true,

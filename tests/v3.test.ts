@@ -108,6 +108,8 @@ describe("v3 client", () => {
     );
     const slow = await client.get("/v3/events").catch((e: unknown) => e);
     expect(describeError(slow)).toContain("did not answer within 1000 ms");
+    const capped = await client.get("/v3/events", {}, { timeout: 250 }).catch((e: unknown) => e);
+    expect(describeError(capped)).toContain("did not answer within 250 ms");
 
     vi.stubGlobal(
       "fetch",
@@ -173,6 +175,11 @@ describe("v3 client", () => {
     vi.stubGlobal("fetch", once);
     await expect(client.get("/v3/events")).rejects.toBeInstanceOf(V3ApiError);
     expect(once).toHaveBeenCalledTimes(1);
+
+    const down = vi.fn(async () => new Response("{}", { status: 503 }));
+    vi.stubGlobal("fetch", down);
+    await expect(client.get("/v3/events", {}, { retries: 0 })).rejects.toBeInstanceOf(V3ApiError);
+    expect(down).toHaveBeenCalledTimes(1);
     vi.useRealTimers();
   });
 });
@@ -271,7 +278,25 @@ describe("v3 tools", () => {
     const get = vi.fn(list("accounts"));
     const r = await call(get, "top_accounts", { limit: 3 });
     expect(r.isError, JSON.stringify(r.content)).toBeFalsy();
-    expect(get).toHaveBeenCalledWith("/v3/people/accounts", { order: undefined, limit: 3, cursor: undefined });
+    expect(get).toHaveBeenCalledWith("/v3/people/accounts", {
+      metric: undefined,
+      order: undefined,
+      limit: 3,
+      cursor: undefined,
+    });
+
+    const byTrack = vi.fn(list("accounts"));
+    await call(byTrack, "top_accounts", { metric: "alphaScore", limit: 2 });
+    expect(byTrack).toHaveBeenCalledWith("/v3/people/accounts", {
+      metric: "alphaScore",
+      order: undefined,
+      limit: 2,
+      cursor: undefined,
+    });
+
+    const bogus = vi.fn(list("accounts"));
+    expect((await call(bogus, "top_accounts", { metric: "followers" })).isError).toBe(true);
+    expect(bogus).not.toHaveBeenCalled();
     expect(r.structuredContent?.notice).toMatch(/third-party/i);
   });
 
@@ -329,6 +354,7 @@ describe("api_status historyFrom", () => {
 
   it("does not wait more than 3 seconds for /v3/key-status", async () => {
     vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+    const get = vi.fn(() => new Promise<Record<string, unknown>>(() => {}));
     const [ct, st] = InMemoryTransport.createLinkedPair();
     const client = new Client({ name: "probe", version: "1.0.0" });
     const server = createServer({
@@ -336,7 +362,7 @@ describe("api_status historyFrom", () => {
         ping: async () => ({ success: true }),
         getApiKeyStatus: async () => ({ success: true, data: { tier: "grow" } }),
       } as unknown as Deps["sdk"],
-      v3: { get: () => new Promise(() => {}) },
+      v3: { get },
       maxResponseChars: 60000,
     });
     await Promise.all([client.connect(ct), server.connect(st)]);
@@ -346,6 +372,7 @@ describe("api_status historyFrom", () => {
     await server.close();
     vi.useRealTimers();
     expect(result.structuredContent).toMatchObject({ historyFrom: null, key: { tier: "grow" } });
+    expect(get).toHaveBeenCalledWith("/v3/key-status", {}, { timeout: 3_000, retries: 0 });
   });
 });
 

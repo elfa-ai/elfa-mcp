@@ -1,6 +1,6 @@
 import http from "node:http";
 import type { AddressInfo } from "node:net";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import pkg from "../package.json" with { type: "json" };
@@ -111,6 +111,14 @@ describe("stdio client identity", () => {
     expect(deps.sdk).not.toBe(before);
     expect(deps.v3).not.toBe(beforeV3);
     expect(agentOf(deps)).toBe(`elfa-mcp/${VERSION} (stdio; client=e2e-client/1.2.3)`);
+    const fetchMock = vi.fn(async () => new Response("{}", { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+    await deps.v3.get("/v3/key-status");
+    vi.unstubAllGlobals();
+    const [, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
+    expect((init.headers as Record<string, string>)["User-Agent"]).toBe(
+      `elfa-mcp/${VERSION} (stdio; client=e2e-client/1.2.3)`,
+    );
     await client.close();
   });
 });

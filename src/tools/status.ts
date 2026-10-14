@@ -73,7 +73,7 @@ export function registerStatus(server: McpServer, deps: Deps): void {
         const [ping, status, v3Status] = await Promise.allSettled([
           deps.sdk.ping(),
           deps.sdk.getApiKeyStatus(),
-          withinHistoryLookup(deps.v3.get("/v3/key-status")),
+          withinHistoryLookup(deps.v3.get("/v3/key-status", {}, { timeout: HISTORY_LOOKUP_TIMEOUT_MS, retries: 0 })),
         ]);
         const historyFrom =
           v3Status.status === "fulfilled" ? v3Status.value.historyFrom : undefined;
