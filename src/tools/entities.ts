@@ -35,7 +35,7 @@ export function registerEntities(server: McpServer, deps: Deps): RegisteredTool 
         readOnlyHint: true,
         destructiveHint: false,
         idempotentHint: true,
-        openWorldHint: false,
+        openWorldHint: true,
       },
     },
     async (args) =>

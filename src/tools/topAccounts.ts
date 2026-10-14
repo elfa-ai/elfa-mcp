@@ -32,7 +32,7 @@ export function registerTopAccounts(server: McpServer, deps: Deps): RegisteredTo
         readOnlyHint: true,
         destructiveHint: false,
         idempotentHint: true,
-        openWorldHint: false,
+        openWorldHint: true,
       },
     },
     async (args) =>
