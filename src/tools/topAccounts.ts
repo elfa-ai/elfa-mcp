@@ -10,9 +10,15 @@ export function registerTopAccounts(server: McpServer, deps: Deps): RegisteredTo
     {
       title: "Top accounts",
       description:
-        "X accounts ranked by standing: how much other accounts engage with them. Free on Pay-as-you-go and Grow plans. Standing measures attention, not accuracy: track is how an account's calls have done, and is null when it has never opened a position. Pass a handle to the calls tool to see its positions.",
+        "X accounts ranked by standing (how much other accounts engage with them) or, with metric, by their track record as callers. Free on Pay-as-you-go and Grow plans. Standing measures attention, not accuracy. For the best callers use metric=alphaScore: avgReturn is not adjusted for the market, so a few big wins or a rally can top it. Track metrics rank only accounts with at least 20 scored positions, over every position since late June 2026; quote the number you ranked by with scoredEpisodes. Pass a handle to the calls tool to see its positions.",
       inputSchema: {
-        order: orderArg.describe("desc (default) ranks the highest standing first."),
+        metric: z
+          .enum(["standing", "alphaScore", "hitRate", "avgReturn"])
+          .optional()
+          .describe(
+            "standing (default) ranks by attention. alphaScore ranks by return against the market (BTC or SPY) and outright, hitRate by the share of scored positions that made money, avgReturn by mean realized return, not adjusted for the market.",
+          ),
+        order: orderArg.describe("desc (default) ranks the highest first."),
         limit: limitArg(200),
         cursor: cursorArg,
       },
@@ -32,6 +38,7 @@ export function registerTopAccounts(server: McpServer, deps: Deps): RegisteredTo
     async (args) =>
       run(deps, async () => {
         const response = await deps.v3.get("/v3/people/accounts", {
+          metric: args.metric,
           order: args.order,
           limit: args.limit,
           cursor: args.cursor,

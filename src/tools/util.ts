@@ -93,7 +93,7 @@ export const orderArg = z
 export const cursorArg = z
   .string()
   .optional()
-  .describe("nextCursor from the previous reply. Keep every other argument the same.");
+  .describe("nextCursor from the previous reply. Keep every other argument the same: a cursor fails with any other metric, order or filter.");
 
 export function limitArg(max: number) {
   return z

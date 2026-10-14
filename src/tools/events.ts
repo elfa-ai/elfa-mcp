@@ -73,7 +73,7 @@ export function registerEvents(server: McpServer, deps: Deps): RegisteredTool {
         assetClass: z
           .enum(["crypto", "equity"])
           .optional()
-          .describe("level=events or arcs. One market. Events naming no asset, such as macro news, come through either way."),
+          .describe("level=events or arcs. Events tied to this market by what they name, plus events tied to neither, such as macro news. As more names are linked to assets, an event can later drop out of one market."),
         novelty: z
           .enum(["new", "update"])
           .optional()

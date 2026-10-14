@@ -271,7 +271,25 @@ describe("v3 tools", () => {
     const get = vi.fn(list("accounts"));
     const r = await call(get, "top_accounts", { limit: 3 });
     expect(r.isError, JSON.stringify(r.content)).toBeFalsy();
-    expect(get).toHaveBeenCalledWith("/v3/people/accounts", { order: undefined, limit: 3, cursor: undefined });
+    expect(get).toHaveBeenCalledWith("/v3/people/accounts", {
+      metric: undefined,
+      order: undefined,
+      limit: 3,
+      cursor: undefined,
+    });
+
+    const byTrack = vi.fn(list("accounts"));
+    await call(byTrack, "top_accounts", { metric: "alphaScore", limit: 2 });
+    expect(byTrack).toHaveBeenCalledWith("/v3/people/accounts", {
+      metric: "alphaScore",
+      order: undefined,
+      limit: 2,
+      cursor: undefined,
+    });
+
+    const bogus = vi.fn(list("accounts"));
+    expect((await call(bogus, "top_accounts", { metric: "followers" })).isError).toBe(true);
+    expect(bogus).not.toHaveBeenCalled();
     expect(r.structuredContent?.notice).toMatch(/third-party/i);
   });
 

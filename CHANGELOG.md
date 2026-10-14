@@ -1,5 +1,17 @@
 # Changelog
 
+## 4.7.0
+
+### Added
+
+- **`top_accounts` ranks by track record.** A new `metric` argument (API 2.11.0) takes `standing` (the default), `alphaScore`, `hitRate` or `avgReturn`. The track metrics rank only accounts with at least 20 scored positions, over every position since late June 2026. The description steers agents to `alphaScore` for "best callers", because `avgReturn` is not adjusted for the market.
+
+### Changed
+
+- `events`: the `assetClass` description now says it keeps events tied to that market by what they name, plus events tied to neither, and that an event can later drop out of a market as more names are linked (API 2.10.1).
+- `cursor` descriptions say a cursor fails with any other metric, order or filter.
+- `swagger.json` is the published 2.11.0 spec.
+
 ## 4.6.0
 
 ### Added
