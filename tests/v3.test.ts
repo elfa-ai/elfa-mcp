@@ -108,7 +108,7 @@ describe("v3 client", () => {
     );
     const slow = await client.get("/v3/events").catch((e: unknown) => e);
     expect(describeError(slow)).toContain("did not answer within 1000 ms");
-    const capped = await client.get("/v3/events", {}, 250).catch((e: unknown) => e);
+    const capped = await client.get("/v3/events", {}, { timeout: 250 }).catch((e: unknown) => e);
     expect(describeError(capped)).toContain("did not answer within 250 ms");
 
     vi.stubGlobal(
@@ -175,6 +175,11 @@ describe("v3 client", () => {
     vi.stubGlobal("fetch", once);
     await expect(client.get("/v3/events")).rejects.toBeInstanceOf(V3ApiError);
     expect(once).toHaveBeenCalledTimes(1);
+
+    const down = vi.fn(async () => new Response("{}", { status: 503 }));
+    vi.stubGlobal("fetch", down);
+    await expect(client.get("/v3/events", {}, { retries: 0 })).rejects.toBeInstanceOf(V3ApiError);
+    expect(down).toHaveBeenCalledTimes(1);
     vi.useRealTimers();
   });
 });
@@ -367,7 +372,7 @@ describe("api_status historyFrom", () => {
     await server.close();
     vi.useRealTimers();
     expect(result.structuredContent).toMatchObject({ historyFrom: null, key: { tier: "grow" } });
-    expect(get).toHaveBeenCalledWith("/v3/key-status", {}, 3_000);
+    expect(get).toHaveBeenCalledWith("/v3/key-status", {}, { timeout: 3_000, retries: 0 });
   });
 });
 

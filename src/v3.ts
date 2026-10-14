@@ -12,7 +12,7 @@ export interface V3ClientOptions {
 export type V3Params = Record<string, string | number | boolean | string[] | undefined>;
 
 export interface V3Client {
-  get(path: string, params?: V3Params, timeout?: number): Promise<Record<string, unknown>>;
+  get(path: string, params?: V3Params, limits?: { timeout?: number; retries?: number }): Promise<Record<string, unknown>>;
 }
 
 export class V3RedirectError extends Error {}
@@ -109,13 +109,15 @@ export function createV3Client(options: V3ClientOptions): V3Client {
   }
 
   return {
-    async get(path, params = {}, timeout = options.timeout) {
+    async get(path, params = {}, limits = {}) {
+      const timeout = limits.timeout ?? options.timeout;
+      const retries = limits.retries ?? options.retries;
       const url = `${base}${path}${queryString(params)}`;
       for (let attempt = 0; ; attempt += 1) {
         try {
           return await once(url, timeout);
         } catch (error) {
-          if (attempt >= options.retries || !retryable(error)) throw error;
+          if (attempt >= retries || !retryable(error)) throw error;
           await new Promise((done) => setTimeout(done, RETRY_DELAY_MS * 2 ** attempt));
         }
       }

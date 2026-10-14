@@ -8,13 +8,14 @@
 
 ### Changed
 
-- `events`: the `assetClass` description now says it keeps events tied to that market by what they name, plus events tied to neither, and that an event can later drop out of a market as more names are linked (API 2.10.1).
+- `events`: the `assetClass` description now says it keeps events tied to that market by what they name, plus events tied to neither, and that a repeated query can return fewer as names get linked to assets (API 2.10.1). For `level=arcs` it keeps arcs where at least 15% of events name an asset in that market, then macro arcs.
 - `cursor` descriptions state the published paging rule: change any argument but `limit` and the cursor fails.
+- Server instructions drop the unix-seconds line, which every `from` argument already carries.
 - `swagger.json` is the published 2.11.0 spec.
 
 ### Fixed
 
-- `api_status` aborts its API v3 key-status lookup after 3 seconds instead of leaving the request open in the background.
+- `api_status` aborts its API v3 key-status lookup after 3 seconds, without retrying, instead of leaving the request open in the background.
 
 ## 4.6.0
 
