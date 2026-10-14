@@ -31,7 +31,7 @@ const unexposed = manifest.unexposed.map(
 );
 
 const table = [
-  `${manifest.tools.length} tools, mapped to every documented \`/v2\` operation.`,
+  `${manifest.tools.length} tools, mapped to every documented \`/v2\` and \`/v3\` operation.`,
   "",
   "| Tool | Mode | Cost | What it does |",
   "| --- | --- | --- | --- |",

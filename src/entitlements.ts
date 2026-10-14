@@ -12,15 +12,28 @@ import { fail } from "./tools/util.js";
  * the pricing page is the source of truth.
  *
  * Only self-serve plan upgrades belong here. Scopes granted per key by sales
- * (enterprise endpoints, v3) have no upgrade to point at.
+ * (enterprise endpoints) have no upgrade to point at.
  */
 export interface ToolGate {
-  /** The oracle route scope the tool needs, as `/v2/key-status` lists it. */
-  scope: string;
+  /** Route scopes, as `/v2/key-status` lists them. Any one unlocks the tool. */
+  scopes: string[];
 }
 
 export const TOOL_GATES: Readonly<Record<string, ToolGate>> = {
-  market_chat: { scope: "chat" },
+  market_chat: { scopes: ["chat"] },
+  entities: { scopes: ["entities", "entities/*"] },
+  events: { scopes: ["events", "events/*", "events/storylines", "events/arcs"] },
+  market: {
+    scopes: [
+      "market/crypto/call-book",
+      "market/equity/call-book",
+      "market/crypto/mindshare",
+      "market/equity/mindshare",
+      "market/crypto/trending-contracts",
+    ],
+  },
+  calls: { scopes: ["calls", "calls/*", "calls/episodes", "calls/positioning"] },
+  top_accounts: { scopes: ["people/accounts"] },
 };
 
 export const UPGRADE_URL = "https://www.elfa.ai/pricing";
@@ -33,7 +46,7 @@ export interface Entitlements {
   scopes: string[];
 }
 
-/** Same matching as oracle's `hasScope`: exact, `*`, or a `prefix/*` family. */
+/** Same matching as the API's scope check: exact, `*`, or a `prefix/*` family. */
 export function hasScope(scopes: string[], required: string): boolean {
   return scopes.some((scope) => {
     if (scope === "*") return true;
@@ -109,7 +122,7 @@ export function applyToolGates(
   if (!entitlements) return;
   for (const [name, gate] of Object.entries(TOOL_GATES)) {
     const tool = tools[name];
-    if (!tool || hasScope(entitlements.scopes, gate.scope)) continue;
+    if (!tool || gate.scopes.some((scope) => hasScope(entitlements.scopes, scope))) continue;
     const message = lockedMessage(name);
     tool.update({
       description: `Requires a higher-tier plan than this API key has (upgrade at ${UPGRADE_URL}). ${tool.description ?? ""}`.trim(),

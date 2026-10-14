@@ -1,16 +1,19 @@
 {
   "server": {
     "name": "elfa",
-    "version": "4.5.0",
+    "version": "4.6.0",
     "docs": "https://docs.elfa.ai",
     "spec": "https://docs.elfa.ai/swagger/swagger.json",
-    "specScope": "/v2"
+    "specScope": [
+      "/v2",
+      "/v3"
+    ]
   },
   "tools": [
     {
       "name": "api_status",
       "title": "API key status",
-      "summary": "Check API key tier, credit usage and remaining requests. Also confirms the API is reachable.",
+      "summary": "Check API key tier, credit usage and remaining requests, and historyFrom, how far back events, market and calls read. Also confirms the API is reachable.",
       "credits": "Free",
       "annotations": {
         "readOnlyHint": true,
@@ -20,7 +23,8 @@
       },
       "operations": [
         "ping-v2",
-        "getApiKeyStatus-v2"
+        "getApiKeyStatus-v2",
+        "key-status-v3"
       ]
     },
     {
@@ -189,6 +193,89 @@
         "auto-upsert-query-draft-v2",
         "auto-delete-query-draft-v2",
         "auto-convert-query-draft-v2"
+      ]
+    },
+    {
+      "name": "entities",
+      "title": "Entities",
+      "summary": "Resolve a ticker, $cashtag, name, @handle, contract address, CoinGecko id, FIGI or CIK to the entity id that events and calls take. Matches exactly, it is not a search.",
+      "credits": "Free on PAYG and Grow",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "operations": [
+        "entities-list-v3"
+      ]
+    },
+    {
+      "name": "events",
+      "title": "Events",
+      "summary": "What is happening in crypto and equity markets. level=events for what happened and how prices reacted, level=storylines for one development threaded over days, level=arcs for storylines grouped into a larger movement. Searchable by topic.",
+      "credits": "Free on PAYG and Grow",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "operations": [
+        "events-list-v3",
+        "storylines-list-v3",
+        "arcs-list-v3"
+      ]
+    },
+    {
+      "name": "market",
+      "title": "Market",
+      "summary": "Whole-market views for crypto or equities. view=mindshare ranks assets by share of attention, view=call_book is the crowd's long/short lean hour by hour, view=trending_contracts ranks contract addresses by how many posts pasted them.",
+      "credits": "Free on PAYG and Grow",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "operations": [
+        "mindshare-crypto-v3",
+        "mindshare-equity-v3",
+        "call-book-crypto-v3",
+        "call-book-equity-v3",
+        "trending-contracts-v3"
+      ]
+    },
+    {
+      "name": "calls",
+      "title": "Calls",
+      "summary": "Positions accounts take in posts. level=calls for each post that takes or changes a position, level=episodes for each position from open to close with the author's track record, level=positioning for open longs and shorts on one asset now.",
+      "credits": "Free on PAYG and Grow",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "operations": [
+        "calls-list-v3",
+        "call-episodes-list-v3",
+        "positioning-v3"
+      ]
+    },
+    {
+      "name": "top_accounts",
+      "title": "Top accounts",
+      "summary": "X accounts ranked by standing, how much other accounts engage with them, with each account's track record as a caller.",
+      "credits": "Free on PAYG and Grow",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "operations": [
+        "top-accounts-v3"
       ]
     }
   ],

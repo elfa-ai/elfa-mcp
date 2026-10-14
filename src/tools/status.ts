@@ -4,6 +4,21 @@ import type { Deps } from "../client.js";
 import { describeError } from "../errors.js";
 import { run } from "./util.js";
 
+const HISTORY_LOOKUP_TIMEOUT_MS = 3_000;
+
+function withinHistoryLookup<T>(promise: Promise<T>): Promise<T> {
+  let timer: NodeJS.Timeout | undefined;
+  return Promise.race([
+    promise,
+    new Promise<never>((_, reject) => {
+      timer = setTimeout(
+        () => reject(new Error("API v3 key status did not answer within 3 seconds.")),
+        HISTORY_LOOKUP_TIMEOUT_MS,
+      );
+    }),
+  ]).finally(() => clearTimeout(timer));
+}
+
 const REPORTED = [
   "tier",
   "status",
@@ -38,11 +53,12 @@ export function registerStatus(server: McpServer, deps: Deps): void {
     {
       title: "API key status",
       description:
-        "Check the Elfa API key tier, credit usage and remaining requests, and confirm the API is reachable. Free. Call this first when a request fails with an auth or credit error.",
+        "Check the Elfa API key tier, credit usage and remaining requests, and confirm the API is reachable. Free. Call this first when a request fails with an auth or credit error. historyFrom is the earliest time, in unix seconds, the events, market and calls tools read on this plan.",
       inputSchema: {},
       outputSchema: {
         reachable: z.boolean(),
         key: z.record(z.unknown()).nullable(),
+        historyFrom: z.number().nullable(),
         problem: z.string().nullable(),
       },
       annotations: {
@@ -54,10 +70,13 @@ export function registerStatus(server: McpServer, deps: Deps): void {
     },
     async () =>
       run(deps, async () => {
-        const [ping, status] = await Promise.allSettled([
+        const [ping, status, v3Status] = await Promise.allSettled([
           deps.sdk.ping(),
           deps.sdk.getApiKeyStatus(),
+          withinHistoryLookup(deps.v3.get("/v3/key-status")),
         ]);
+        const historyFrom =
+          v3Status.status === "fulfilled" ? v3Status.value.historyFrom : undefined;
 
         return {
           reachable: ping.status === "fulfilled",
@@ -65,10 +84,13 @@ export function registerStatus(server: McpServer, deps: Deps): void {
             status.status === "fulfilled"
               ? summarise(status.value.data as unknown as Record<string, unknown>)
               : null,
+          historyFrom: typeof historyFrom === "number" ? historyFrom : null,
           problem:
             status.status === "rejected"
               ? describeError(status.reason)
-              : null,
+              : v3Status.status === "rejected"
+                ? `historyFrom unavailable: ${describeError(v3Status.reason)}`
+                : null,
         };
       }),
   );

@@ -1,10 +1,16 @@
 # Elfa MCP
 
-Model Context Protocol server for the [Elfa API](https://docs.elfa.ai) — crypto social intelligence from X and Telegram, plus **Auto**, a condition engine that watches the market and fires an action when your conditions are met.
+Model Context Protocol server for the [Elfa API](https://docs.elfa.ai) — crypto social intelligence from X and Telegram, API v3 events, positions and rankings across crypto and equities, plus **Auto**, a condition engine that watches the market and fires an action when your conditions are met.
 
-Works with any MCP client: Claude Code, Claude Desktop, Cursor, VS Code, Codex, and anything else that speaks MCP.
+Works with any MCP client, either signed in to the hosted server or running locally with an API key.
 
 ## Install
+
+**Hosted, sign in with Elfa**
+
+Add `https://mcp.elfa.ai/mcp` as a remote MCP server in your client and approve it in your browser with your [dev.elfa.ai](https://dev.elfa.ai) account. No key to copy, nothing to install. If your client cannot sign in, run the server locally instead. Setup steps are in the [MCP guide](https://docs.elfa.ai/mcp).
+
+**Local, API key**
 
 Get an API key at [dev.elfa.ai](https://dev.elfa.ai). No install step — `npx` fetches the server on demand.
 
@@ -63,11 +69,11 @@ Some MCP clients apply their own timeout, often around 60 seconds. `narratives` 
 
 <!-- tools:start -->
 
-11 tools, mapped to every documented `/v2` operation.
+16 tools, mapped to every documented `/v2` and `/v3` operation.
 
 | Tool | Mode | Cost | What it does |
 | --- | --- | --- | --- |
-| `api_status` | read | Free | Check API key tier, credit usage and remaining requests. Also confirms the API is reachable. |
+| `api_status` | read | Free | Check API key tier, credit usage and remaining requests, and historyFrom, how far back events, market and calls read. Also confirms the API is reachable. |
 | `mentions` | read | 1 per call | Social mentions from X and Telegram. mode=top ranks a ticker's mentions by engagement, mode=search filters by keyword or account, mode=news returns the token news feed, which is X posts from accounts tagged as news sources rather than articles from news outlets. |
 | `trending` | read | 1 per call | What is gaining social attention. scope=tokens for tickers, scope=contracts_twitter or scope=contracts_telegram for contract addresses. |
 | `narratives` | read | 5 per call | Written narrative analysis with source links. scope=market extracts market-wide narratives, scope=keywords summarises events for specific keywords. |
@@ -78,6 +84,11 @@ Some MCP clients apply their own timeout, often around 60 seconds. `narratives` 
 | `auto_query` | read | Free | Read side of Auto: list queries, poll one query, and read its executions and LLM sessions. |
 | `auto_query_write` | write | 5 plus LLM usage to create, free to cancel or delete | Activate, cancel or delete an Auto query. Activated queries run unattended and fire their action when conditions are met. |
 | `auto_draft` | write | Free, except convert which costs the same as creating a query | Manage inactive Auto drafts. Drafts do not evaluate until converted into an active query. |
+| `entities` | read | Free on PAYG and Grow | Resolve a ticker, $cashtag, name, @handle, contract address, CoinGecko id, FIGI or CIK to the entity id that events and calls take. Matches exactly, it is not a search. |
+| `events` | read | Free on PAYG and Grow | What is happening in crypto and equity markets. level=events for what happened and how prices reacted, level=storylines for one development threaded over days, level=arcs for storylines grouped into a larger movement. Searchable by topic. |
+| `market` | read | Free on PAYG and Grow | Whole-market views for crypto or equities. view=mindshare ranks assets by share of attention, view=call_book is the crowd's long/short lean hour by hour, view=trending_contracts ranks contract addresses by how many posts pasted them. |
+| `calls` | read | Free on PAYG and Grow | Positions accounts take in posts. level=calls for each post that takes or changes a position, level=episodes for each position from open to close with the author's track record, level=positioning for open longs and shorts on one asset now. |
+| `top_accounts` | read | Free on PAYG and Grow | X accounts ranked by standing, how much other accounts engage with them, with each account's track record as a caller. |
 
 Not exposed as tools:
 
@@ -87,9 +98,17 @@ Not exposed as tools:
 
 <!-- tools:end -->
 
-Some tools depend on the plan: today `market_chat`, which needs a higher-tier plan than the free one. At startup (stdio) or per request (HTTP, cached for a minute per key), the server reads the key's scopes from `/v2/key-status`. A tool the plan doesn't include stays listed, but its description says it needs a higher-tier plan, and calling it returns the upgrade link without calling the API or spending credits. If the scopes can't be read within 3 seconds, every tool is listed as usual and the API decides.
+Some tools depend on the plan: today `market_chat` and the API v3 tools, which need a higher-tier plan than the free one. At startup (stdio) or per request (HTTP, cached for a minute per key), the server reads the key's scopes from `/v2/key-status`. A tool the plan doesn't include stays listed, but its description says it needs a higher-tier plan, and calling it returns the upgrade link without calling the API or spending credits. If the scopes can't be read within 3 seconds, every tool is listed as usual and the API decides.
 
-Streaming endpoints stay available through the [SDKs](https://docs.elfa.ai) for applications that can consume SSE.
+Streaming endpoints stay available through the [SDKs](https://docs.elfa.ai/sdks) for applications that can consume SSE.
+
+### API v3
+
+`entities`, `events`, `market`, `calls` and `top_accounts` read [API v3](https://docs.elfa.ai/v3/overview): events, storylines and arcs; call books, mindshare and trending contracts; calls, call episodes and positioning; ranked accounts. They cover crypto and equities, are free on Pay-as-you-go and Grow plans, and are open to Enterprise keys.
+
+- Filters take entity ids, not tickers. Resolve an asset with `entities` first and reuse the id.
+- Times are unix seconds. Milliseconds are refused.
+- How far back a key reads depends on its plan. `api_status` returns it as `historyFrom`.
 
 ### Where this differs from the raw API
 
@@ -98,11 +117,12 @@ The tools deliberately do not inherit every API default, because an agent pays f
 | | API | Here | Why |
 | --- | --- | --- | --- |
 | `pageSize` | 10 to 50 depending on endpoint, max 100 | 10 | Page through rather than pull everything |
+| `limit` on v3 tools | 10 or 50 depending on endpoint, max 30 or 200 | 10 | Page with `cursor` rather than pull everything |
 | `speed` on chat | `expert` | `fast` | Cheaper by default, ask for `expert` when depth matters |
 | Mention fields | full record | high signal fields | Pass `verbosity: "detailed"` for the rest |
 | Large responses | returned whole | trimmed to fit, with a note | Keeps one call from filling the context window |
 
-Every value is still settable per call, and `pageSize` accepts up to 100.
+Every value is still settable per call: `pageSize` accepts up to 100, and `limit` up to the endpoint's maximum.
 
 ## Auto
 
@@ -187,7 +207,7 @@ Notes:
 `api_status` is the fastest way to tell an auth problem from a credit problem.
 
 
-Mentions, news and narratives return third-party social text that anyone can write. The server marks it as untrusted in every response, and the server instructions tell the model to treat it as data. Keep that in mind before letting an agent chain from that content into `auto_query_write`.
+Mentions, news and narratives return third-party social text that anyone can write, events are written up from it, and the v3 tools carry third-party asset, account and channel names. The server marks it as untrusted in every response, and the server instructions tell the model to treat it as data. Keep that in mind before letting an agent chain from that content into `auto_query_write`.
 
 ## Development
 

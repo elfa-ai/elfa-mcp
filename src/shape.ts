@@ -92,6 +92,16 @@ export function toResult(
 
   if (dropped > 0) {
     text += `\n\n${dropped} item(s) omitted to stay within the response limit. Narrow the time window or lower the page size to see the rest.`;
+    const items = structured.items;
+    const keptItems = payload.items;
+    if (
+      typeof structured.nextCursor === "string" &&
+      Array.isArray(items) &&
+      Array.isArray(keptItems) &&
+      keptItems.length < items.length
+    ) {
+      text += " nextCursor continues after the omitted items, so re-read this page with a lower limit before paging on.";
+    }
   }
 
   if (text.length > maxChars + 200) {
