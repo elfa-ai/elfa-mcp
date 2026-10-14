@@ -10,13 +10,13 @@ export function registerTopAccounts(server: McpServer, deps: Deps): RegisteredTo
     {
       title: "Top accounts",
       description:
-        "X accounts ranked by standing (how much other accounts engage with them) or, with metric, by their track record as callers. Free on Pay-as-you-go and Grow plans. Standing measures attention, not accuracy, and track is null for an account that has never opened a position. For the best callers use metric=alphaScore: avgReturn is not adjusted for the market, so a few big wins or a rally can top it. Track metrics rank only accounts with at least 20 scored positions, over every position since late June 2026; quote the number you ranked by with scoredEpisodes. Pass a handle to the calls tool to see its positions.",
+        "X accounts ranked by standing (how much other accounts engage with them) or, with metric, by their track record as callers. Free on Pay-as-you-go and Grow plans. Standing measures attention, not accuracy; track is null for an account that has never opened a position. For the best callers use metric=alphaScore, not avgReturn, which a few big wins or a rally can top. Track metrics rank only accounts with at least 20 scored positions, over every position since late June 2026; quote the number you ranked by with scoredEpisodes. Pass a handle to the calls tool to see its positions.",
       inputSchema: {
         metric: z
           .enum(["standing", "alphaScore", "hitRate", "avgReturn"])
           .optional()
           .describe(
-            "standing (default) ranks by attention. alphaScore ranks by return against the market (BTC or SPY) and outright, hitRate by the share of scored positions that made money, avgReturn by mean realized return, not adjusted for the market.",
+            "standing (default). alphaScore: return against the market (BTC for crypto, SPY for equities) and outright. hitRate: share of scored positions that made money. avgReturn: mean realized return, not adjusted for the market.",
           ),
         order: orderArg.describe("desc (default) ranks the highest first."),
         limit: limitArg(200),

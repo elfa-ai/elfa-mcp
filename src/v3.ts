@@ -12,7 +12,7 @@ export interface V3ClientOptions {
 export type V3Params = Record<string, string | number | boolean | string[] | undefined>;
 
 export interface V3Client {
-  get(path: string, params?: V3Params): Promise<Record<string, unknown>>;
+  get(path: string, params?: V3Params, timeout?: number): Promise<Record<string, unknown>>;
 }
 
 export class V3RedirectError extends Error {}
@@ -76,7 +76,7 @@ function causeOf(error: TypeError): string {
 export function createV3Client(options: V3ClientOptions): V3Client {
   const base = (options.baseUrl ?? DEFAULT_BASE_URL).replace(/\/+$/, "");
 
-  async function request(url: string): Promise<Record<string, unknown>> {
+  async function request(url: string, timeout: number): Promise<Record<string, unknown>> {
     const response = await fetch(url, {
       headers: {
         ...options.headers,
@@ -84,16 +84,16 @@ export function createV3Client(options: V3ClientOptions): V3Client {
         "x-elfa-api-key": options.apiKey,
       },
       redirect: "error",
-      signal: AbortSignal.timeout(options.timeout),
+      signal: AbortSignal.timeout(timeout),
     });
     if (!response.ok) throw await errorFrom(response);
     return (await response.json()) as Record<string, unknown>;
   }
 
-  function once(url: string): Promise<Record<string, unknown>> {
-    return request(url).catch((error: unknown) => {
+  function once(url: string, timeout: number): Promise<Record<string, unknown>> {
+    return request(url, timeout).catch((error: unknown) => {
       if (error instanceof Error && error.name === "TimeoutError") {
-        throw new Error(`The Elfa API did not answer within ${options.timeout} ms. Retry, or narrow the request.`);
+        throw new Error(`The Elfa API did not answer within ${timeout} ms. Retry, or narrow the request.`);
       }
       if (error instanceof TypeError && error.cause !== undefined) {
         const cause = causeOf(error);
@@ -109,11 +109,11 @@ export function createV3Client(options: V3ClientOptions): V3Client {
   }
 
   return {
-    async get(path, params = {}) {
+    async get(path, params = {}, timeout = options.timeout) {
       const url = `${base}${path}${queryString(params)}`;
       for (let attempt = 0; ; attempt += 1) {
         try {
-          return await once(url);
+          return await once(url, timeout);
         } catch (error) {
           if (attempt >= options.retries || !retryable(error)) throw error;
           await new Promise((done) => setTimeout(done, RETRY_DELAY_MS * 2 ** attempt));

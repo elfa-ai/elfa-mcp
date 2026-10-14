@@ -108,6 +108,8 @@ describe("v3 client", () => {
     );
     const slow = await client.get("/v3/events").catch((e: unknown) => e);
     expect(describeError(slow)).toContain("did not answer within 1000 ms");
+    const capped = await client.get("/v3/events", {}, 250).catch((e: unknown) => e);
+    expect(describeError(capped)).toContain("did not answer within 250 ms");
 
     vi.stubGlobal(
       "fetch",
@@ -347,6 +349,7 @@ describe("api_status historyFrom", () => {
 
   it("does not wait more than 3 seconds for /v3/key-status", async () => {
     vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+    const get = vi.fn(() => new Promise<Record<string, unknown>>(() => {}));
     const [ct, st] = InMemoryTransport.createLinkedPair();
     const client = new Client({ name: "probe", version: "1.0.0" });
     const server = createServer({
@@ -354,7 +357,7 @@ describe("api_status historyFrom", () => {
         ping: async () => ({ success: true }),
         getApiKeyStatus: async () => ({ success: true, data: { tier: "grow" } }),
       } as unknown as Deps["sdk"],
-      v3: { get: () => new Promise(() => {}) },
+      v3: { get },
       maxResponseChars: 60000,
     });
     await Promise.all([client.connect(ct), server.connect(st)]);
@@ -364,6 +367,7 @@ describe("api_status historyFrom", () => {
     await server.close();
     vi.useRealTimers();
     expect(result.structuredContent).toMatchObject({ historyFrom: null, key: { tier: "grow" } });
+    expect(get).toHaveBeenCalledWith("/v3/key-status", {}, 3_000);
   });
 });
 

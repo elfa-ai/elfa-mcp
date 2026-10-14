@@ -9,8 +9,12 @@
 ### Changed
 
 - `events`: the `assetClass` description now says it keeps events tied to that market by what they name, plus events tied to neither, and that an event can later drop out of a market as more names are linked (API 2.10.1).
-- `cursor` descriptions say a cursor fails with any other metric, order or filter.
+- `cursor` descriptions state the published paging rule: change any argument but `limit` and the cursor fails.
 - `swagger.json` is the published 2.11.0 spec.
+
+### Fixed
+
+- `api_status` aborts its API v3 key-status lookup after 3 seconds instead of leaving the request open in the background.
 
 ## 4.6.0
 

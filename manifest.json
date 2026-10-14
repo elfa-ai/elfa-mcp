@@ -266,7 +266,7 @@
     {
       "name": "top_accounts",
       "title": "Top accounts",
-      "summary": "X accounts ranked by standing, how much other accounts engage with them, or with metric by their track record as callers (alphaScore, hitRate, avgReturn).",
+      "summary": "X accounts ranked by standing (how much other accounts engage with them) or, with metric, by their track record as callers (alphaScore, hitRate, avgReturn).",
       "credits": "Free on PAYG and Grow",
       "annotations": {
         "readOnlyHint": true,
