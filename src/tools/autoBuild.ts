@@ -10,7 +10,7 @@ export function registerAutoBuild(server: McpServer, deps: Deps): void {
     {
       title: "Auto query builder",
       description:
-        "Turn a plain-language monitoring request into an EQL query. Costs 1 credit plus LLM usage. This only drafts the query, nothing starts running until you activate it with auto_query_write. Say what to watch, the threshold, and what should happen when it fires.",
+        "Turn a plain-language monitoring request into an EQL query. Costs 1 credit plus LLM usage. This only drafts the query, nothing starts running until you activate it with auto_query_write. Say what to watch, the threshold, and what should happen when it fires. It drafts tweet conditions only for accounts in Elfa's real-time set (included); for any other X account, write the condition yourself and check it with auto_validate.",
       inputSchema: {
         message: z
           .string()

@@ -11,7 +11,7 @@ export function registerAutoQuery(server: McpServer, deps: Deps): void {
     {
       title: "Read Auto queries",
       description:
-        "Read side of Auto. Free. method=list browses queries, method=get polls one query and returns its latest evaluation, plus failure with the reason when it ended as failed, method=executions and method=execution show what fired, method=sessions and method=session return the LLM analysis attached to a query. There is no push channel here, poll with method=get and respect pollAfterSeconds.",
+        "Read side of Auto. Free. method=list browses queries, method=get polls one query and returns its latest evaluation, plus failure when it failed with a recorded reason, method=executions and method=execution show what fired, method=sessions and method=session return the LLM analysis attached to a query. There is no push channel here, poll with method=get and respect pollAfterSeconds.",
       inputSchema: {
         method: z
           .enum([
