@@ -43,6 +43,16 @@ describe("sparse API payloads", () => {
     expect(r.isError, JSON.stringify(r.content)).toBeFalsy();
   });
 
+  it("validate returns the X accounts and their billing", async () => {
+    const tweetAccounts = [
+      { path: "conditions.OR[0]", username: "cz_binance", accountSourceRefId: "902926941413453824", billing: "included" },
+      { path: "conditions.OR[1]", username: "nasa", accountSourceRefId: "11348282", billing: "per_post", creditsPerPost: 1 },
+    ];
+    const sdk = { auto: { validateQuery: async () => ({ valid: true, errors: [], warnings: [], estimatedCredits: 0, tweetAccounts }) } };
+    const r = await call(sdk, "auto_validate", { query: { conditions: {}, actions: [], expiresIn: "24h" } });
+    expect(r.structuredContent).toEqual({ valid: true, errors: [], warnings: [], estimatedCredits: 0, tweetAccounts });
+  });
+
   it("narratives when the payload is empty", async () => {
     const sdk = { getTrendingNarratives: async () => ({ success: true, data: {} }) };
     const r = await call(sdk, "narratives", {});

@@ -4,7 +4,7 @@
 
 Add `https://mcp.elfa.ai/mcp` as a remote MCP server in your client and approve it in your browser with your [dev.elfa.ai](https://dev.elfa.ai) account. No key to copy, nothing to install. Each app you connect gets its own key, billed to your account and managed under **Connected apps** (settings → General).
 
-If your client cannot sign in, run the server locally as described below. Setup steps are in the [MCP guide](https://docs.elfa.ai/mcp).
+If your client cannot sign in, run the server locally as described below. Setup steps are in the [MCP guide](https://docs.elfa.ai/tools/mcp).
 
 ## Requirements
 
