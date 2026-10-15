@@ -84,11 +84,11 @@ Some MCP clients apply their own timeout, often around 60 seconds. `narratives` 
 | `auto_query` | read | Free | Read side of Auto: list queries, poll one query, and read its executions and LLM sessions. |
 | `auto_query_write` | write | 5 plus LLM usage to create, free to cancel or delete | Activate, cancel or delete an Auto query. Activated queries run unattended and fire their action when conditions are met. |
 | `auto_draft` | write | Free, except convert which costs the same as creating a query | Manage inactive Auto drafts. Drafts do not evaluate until converted into an active query. |
-| `entities` | read | Free on PAYG and Grow | Resolve a ticker, $cashtag, name, @handle, contract address, CoinGecko id, FIGI or CIK to the entity id that events and calls take. Matches exactly, it is not a search. |
-| `events` | read | Free on PAYG and Grow | What is happening in crypto and equity markets. level=events for what happened and how prices reacted, level=storylines for one development threaded over days, level=arcs for storylines grouped into a larger movement. Searchable by topic. |
-| `market` | read | Free on PAYG and Grow | Whole-market views for crypto or equities. view=mindshare ranks assets by share of attention, view=call_book is the crowd's long/short lean hour by hour, view=trending_contracts ranks contract addresses by how many posts pasted them. |
-| `calls` | read | Free on PAYG and Grow | Positions accounts take in posts. level=calls for each post that takes or changes a position, level=episodes for each position from open to close with the author's track record, level=positioning for open longs and shorts on one asset now. |
-| `top_accounts` | read | Free on PAYG and Grow | X accounts ranked by standing (how much other accounts engage with them) or, with metric, by their track record as callers (alphaScore, hitRate, avgReturn). |
+| `entities` | read | Free on PAYG and Grow until 31 Oct 2026 | Resolve a ticker, $cashtag, name, @handle, contract address, CoinGecko id, FIGI or CIK to the entity id that events and calls take. Matches exactly, it is not a search. |
+| `events` | read | Free on PAYG and Grow until 31 Oct 2026 | What is happening in crypto and equity markets. level=events for what happened and how prices reacted, level=storylines for one development threaded over days, level=arcs for storylines grouped into a larger movement. Searchable by topic. |
+| `market` | read | Free on PAYG and Grow until 31 Oct 2026 | Whole-market views for crypto or equities. view=mindshare ranks assets by share of attention, view=call_book is the crowd's long/short lean hour by hour, view=trending_contracts ranks contract addresses by how many posts pasted them. |
+| `calls` | read | Free on PAYG and Grow until 31 Oct 2026 | Positions accounts take in posts. level=calls for each post that takes or changes a position, level=episodes for each position from open to close with the author's track record, level=positioning for open longs and shorts on one asset now. |
+| `top_accounts` | read | Free on PAYG and Grow until 31 Oct 2026 | X accounts ranked by standing (how much other accounts engage with them) or, with metric, by their track record as callers (alphaScore, hitRate, avgReturn). |
 
 Not exposed as tools:
 
@@ -100,11 +100,11 @@ Not exposed as tools:
 
 Some tools depend on the plan: today `market_chat` and the API v3 tools, which need a higher-tier plan than the free one. At startup (stdio) or per request (HTTP, cached for a minute per key), the server reads the key's scopes from `/v2/key-status`. A tool the plan doesn't include stays listed, but its description says it needs a higher-tier plan, and calling it returns the upgrade link without calling the API or spending credits. If the scopes can't be read within 3 seconds, every tool is listed as usual and the API decides.
 
-Streaming endpoints stay available through the [SDKs](https://docs.elfa.ai/sdks) for applications that can consume SSE.
+Streaming endpoints stay available through the [SDKs](https://docs.elfa.ai/tools/sdks) for applications that can consume SSE.
 
 ### API v3
 
-`entities`, `events`, `market`, `calls` and `top_accounts` read [API v3](https://docs.elfa.ai/v3/overview): events, storylines and arcs; call books, mindshare and trending contracts; calls, call episodes and positioning; ranked accounts. They cover crypto and equities, are free on Pay-as-you-go and Grow plans, and are open to Enterprise keys.
+`entities`, `events`, `market`, `calls` and `top_accounts` read [API v3](https://docs.elfa.ai/api/v3/overview): events, storylines and arcs; call books, mindshare and trending contracts; calls, call episodes and positioning; ranked accounts. They cover crypto and equities, are free on Pay-as-you-go and Grow plans until 31 October 2026, and are open to Enterprise keys.
 
 - Filters take entity ids, not tickers. Resolve an asset with `entities` first and reuse the id.
 - Times are unix seconds. Milliseconds are refused.

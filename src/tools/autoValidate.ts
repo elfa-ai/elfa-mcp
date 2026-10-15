@@ -13,7 +13,7 @@ export function registerAutoValidate(server: McpServer, deps: Deps): void {
     {
       title: "Validate Auto query",
       description:
-        "Check EQL syntax and get a cost estimate before anything is activated. Free. Always run this before auto_query_write, and show the estimated cost to the user. Pass either an inline query or a draftId. method=symbol instead checks that a symbol has market data on a venue, before you build price or ta conditions around it.",
+        "Check EQL syntax and get a cost estimate before anything is activated. Free. Always run this before auto_query_write, and show the estimated cost to the user. tweetAccounts lists the X account behind each tweet condition: billing=per_post accounts cost creditsPerPost for every post while the query runs, on top of estimatedCredits, so state that too. Pass either an inline query or a draftId. method=symbol instead checks that a symbol has market data on a venue, before you build price or ta conditions around it.",
       inputSchema: {
         method: z
           .enum(["query", "symbol"])
@@ -44,7 +44,7 @@ export function registerAutoValidate(server: McpServer, deps: Deps): void {
         errors: z.array(z.unknown()),
         warnings: z.array(z.unknown()),
         estimatedCredits: z.number().nullable(),
-        estimatedCost: z.record(z.unknown()).nullable(),
+        tweetAccounts: z.array(z.record(z.unknown())),
       },
       annotations: {
         readOnlyHint: true,
@@ -75,7 +75,7 @@ export function registerAutoValidate(server: McpServer, deps: Deps): void {
               : [`${symbol} has no market data on ${exchange}.`],
             warnings: [],
             estimatedCredits: null,
-            estimatedCost: null,
+            tweetAccounts: [],
           };
         });
       }
@@ -100,9 +100,9 @@ export function registerAutoValidate(server: McpServer, deps: Deps): void {
           errors: asArray<unknown>(response.errors),
           warnings: asArray<unknown>(response.warnings),
           estimatedCredits: response.estimatedCredits ?? null,
-          estimatedCost:
-            (response.estimatedCost as Record<string, unknown> | undefined) ??
-            null,
+          tweetAccounts: asArray<Record<string, unknown>>(
+            (response as { tweetAccounts?: unknown }).tweetAccounts,
+          ),
         };
       });
     },

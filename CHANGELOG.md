@@ -1,5 +1,22 @@
 # Changelog
 
+## 4.8.0
+
+### Added
+
+- **`auto_validate` returns `tweetAccounts`** (API 2.12.0): the X account behind each `tweet` condition and how it is billed. `included` accounts cost nothing extra; `per_post` accounts cost `creditsPerPost` for every post while the query runs, on top of `estimatedCredits`. The `auto_validate` and `auto_query_write` descriptions tell agents to state that cost before activating.
+
+### Changed
+
+- **API v3 is free until 31 October 2026** on Pay-as-you-go and Grow (API 2.11.2). The v3 tool descriptions, server instructions and the bundle's tool list say so.
+- `auto_query`: `method=get` mentions the `failure` reason a failed query now carries (API 2.12.0).
+- Links point at the current docs.elfa.ai pages (`/tools/mcp`, `/tools/sdks`, `/api/v3/overview`) instead of their redirects.
+- `swagger.json` is the published 3.0.0 spec.
+
+### Removed
+
+- `auto_validate` no longer returns `estimatedCost`. The API returns it only on x402, never to an API key, so it was always `null` here; `estimatedCredits` is the estimate.
+
 ## 4.7.0
 
 ### Added
